@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Value Standard Unit (V) — Experimental Dashboard</title>
+<link rel="stylesheet" href="./styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
+<script src="./app.js" defer></script>
+</head>
+<body>
+<header><div class="wrap top"><div><span class="eyebrow">OPEN CURRENCY MEASUREMENT EXPERIMENT</span><h1>Value Standard Unit <em>V</em></h1><p>가치기준단위 · 검증 가능한 통화 가치 비교 실험</p></div><a href="https://github.com/ygim95473-code/value-standard-unit" target="_blank" rel="noopener">GitHub 제안서 ↗</a></div></header>
+<main class="wrap">
+<section class="banner"><strong>실험적 측정 지표 — 공식 환율 아님</strong><p>기준 시각: <b>2026-10-19 09:00:00 KST (00:00:00 UTC)</b> · 최초 정의: <b>1 V = 1 KRW</b>. 기준값은 원화에 영구 고정되지 않습니다. 확인되지 않은 환율·BIS 관측값은 표시하지 않습니다.</p></section>
+<div class="grid summary"><article><span>기준일</span><strong>2026.10.19</strong><small>09:00 KST</small></article><article><span>최초 기준</span><strong>1 V = 1 KRW</strong><small>숫자 척도 정의</small></article><article><span>자료 상태</span><strong id="status">미입력</strong><small id="statusDetail">검증 자료를 불러오세요</small></article></div>
+<section class="panel"><div class="heading"><div><h2>01 · 자료 불러오기</h2><p>CSV 두 파일을 로컬 브라우저에서 처리합니다. 파일은 서버로 전송하지 않습니다.</p></div><a href="./data/FORMAT.md" target="_blank">자료 형식 보기 ↗</a></div>
+<div class="upload"><label>기준 환율 CSV <input type="file" id="baseline" accept=".csv,text/csv"></label><label>BIS 지수 CSV <input type="file" id="indices" accept=".csv,text/csv"></label></div>
+<p class="hint">기준 환율: currency,krw_per_unit,quote_time_utc,source,source_url,quote_type,verified · 지수: currency,variant,period,index_value,source,series_id,verified. 기준시각과 다른 호가 또는 월별 REER는 반드시 관측 시점 차이를 공개해야 합니다.</p>
+<div class="actions"><button id="load">검증 자료 계산</button><button class="secondary" id="sample">예시 데이터로 기능 시험</button><button class="secondary" id="reset">초기화</button></div><p id="message" class="message" role="status" aria-live="polite"></p></section>
+<section class="panel"><div class="heading"><div><h2>02 · 통화별 V 계산</h2><p>기준 시장 환율과 지수의 비율로 계산합니다.</p></div><label class="select">지수 종류 <select id="variant"><option value="NEER">NEER-V (명목)</option><option value="REER">REER-V (실질)</option></select></label></div>
+<div class="formula">Vᵢ(t) = Vᵢ(t₀) × Iᵢ(t) / Iᵢ(t₀)</div><p class="hint">BIS 지수는 통화별 서로 다른 교역가중치를 사용합니다. 결과는 지수 유도 값이며, 시장에서 거래 가능한 교차환율이나 절대 가치가 아닙니다.</p>
+<div class="table-scroll"><table><thead><tr><th>통화</th><th>최초 V / 1통화</th><th>최근 관측 기간</th><th>계산 V / 1통화</th><th>기준 대비 변화</th></tr></thead><tbody id="results"><tr><td>KRW</td><td>1</td><td colspan="3">기준 환율 및 지수 자료를 불러오세요.</td></tr></tbody></table></div>
+<div class="chartbox"><canvas id="chart" role="img" aria-label="통화별 기준 대비 지수 변화 그래프"></canvas><p id="chartFallback">데이터를 불러오면 기간별 변화를 표시합니다.</p></div>
+</section>
+<section class="panel"><h2>03 · 검증 및 재현성</h2><p>자료의 출처·기준시각·지수 계열과 관측 기간을 확인합니다. 검증 표시(verified)는 제출자의 주장일 뿐 외부 기관의 인증을 의미하지 않습니다.</p><ul id="audit"><li>아직 입력된 자료가 없습니다.</li></ul><button id="export" class="secondary" disabled>계산 결과 CSV 내려받기</button></section>
+<footer>Value Standard Unit (V) · v0.1 prototype · <a href="https://github.com/ygim95473-code/value-standard-unit/discussions">공개 토론 및 반론 ↗</a> · 연구 실험용, 투자 조언 아님</footer>
+</main>
+</body></html>
