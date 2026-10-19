@@ -26,14 +26,14 @@
     for(const value of [c,s.series_id,s.baseline_period,latest.period,fmt(v)+" V",(100*(latest.index/s.baseline_index-1)).toFixed(3)+"%"]){
      const td=document.createElement("td");td.textContent=value;tr.appendChild(td);
     }table.appendChild(tr);
-    const arr=s.observations.map(x=>({period:x.period,value:base[c]*x.index/s.baseline_index}));
+    const arr=s.observations.map(x=>({period:x.period,value:100*(x.index/s.baseline_index-1)}));
     arr.forEach(x=>allDates.add(x.period));
     datasets.push({label:c+" (기준 대비 %)",points:arr,color:colors[i]});
    }
    if(chart){chart.destroy();chart=null}
    if(typeof Chart!=="undefined"&&datasets.length){
     const labels=[...allDates].sort();
-    chart=new Chart(canvas,{type:"line",data:{labels,datasets:datasets.map(d=>({label:d.label,data:labels.map(p=>d.points.find(x=>x.period===p)?.value??null),borderColor:d.color,backgroundColor:d.color,pointRadius:0,spanGaps:false,tension:.1}))},options:{responsive:true,plugins:{title:{display:true,text:"BIS 지수 기반 V 가치 변화율 (%) — 기준 시점 0%"}}}});
+    chart=new Chart(canvas,{type:"line",data:{labels,datasets:datasets.map(d=>({label:d.label,data:labels.map(p=>d.points.find(x=>x.period===p)?.value??null),borderColor:d.color,backgroundColor:d.color,pointRadius:0,spanGaps:false,tension:.1}))},options:{responsive:true,plugins:{title:{display:true,text:"BIS 지수 기반 통화별 변화율 (%) · 최초 지수 기간 대비"}},scales:{y:{title:{display:true,text:"변화율 (%)"}}}}});
    }
   }
   variant.addEventListener("change",draw);draw();
