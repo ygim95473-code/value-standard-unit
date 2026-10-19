@@ -29,7 +29,7 @@ function parse(fx,indices,synthetic=false){
  }
  for(const r of indices){const c=r.currency.toUpperCase(),v=r.variant.toUpperCase();if(!CURRENCIES.includes(c)||!["NEER","REER"].includes(v))continue;
  if(!/^\d{4}-\d\d(-\d\d)?$/.test(r.period))throw Error("잘못된 지수 관측 기간: "+r.period);
- const value=positive(r.index_value,c+" "+v+" 지수");if(!r.baseline_period||!/^\d{4}-\d\d(-\d\d)?$/.test(r.baseline_period))throw Error(c+" "+v+": 명시적 기준 관측 기간(baseline_period)이 필요합니다.");if(v==="NEER"&&r.baseline_period!=="2026-10-19")throw Error(c+" NEER: 기준 관측일은 2026-10-19여야 합니다.");if(v==="REER"&&r.baseline_period>="2026-10")throw Error(c+" REER: 2026-10-19 시각에 발표되지 않은 2026-10 이후 월 자료를 기준으로 쓸 수 없습니다.");const key=c+"|"+v;if(!groups.has(key))groups.set(key,[]);
+ const value=positive(r.index_value,c+" "+v+" 지수");if(!r.baseline_period||!/^\d{4}-\d\d(-\d\d)?$/.test(r.baseline_period))throw Error(c+" "+v+": 명시적 기준 관측 기간(baseline_period)이 필요합니다.");if(v==="NEER"&&r.baseline_period>"2026-10-19")throw Error(c+" NEER: 기준일 이후 관측값을 최초 기준으로 쓸 수 없습니다.");if(v==="REER"&&r.baseline_period>="2026-10")throw Error(c+" REER: 2026-10-19 시각에 발표되지 않은 2026-10 이후 월 자료를 기준으로 쓸 수 없습니다.");const key=c+"|"+v;if(!groups.has(key))groups.set(key,[]);
  groups.get(key).push({...r,currency:c,variant:v,value});
  if(r.verified!=="true")notes.push(c+" "+v+" "+r.period+": 지수 검증 표시 미완료");
  if(!r.source||!r.series_id)notes.push(c+" "+v+": BIS 계열 식별자/출처 누락");
@@ -39,7 +39,7 @@ function parse(fx,indices,synthetic=false){
  if(bases.size!==1)throw Error(key+": 기준 관측 기간이 서로 다릅니다.");
  const basePeriod=arr[0].baseline_period;
  if(!arr.some(x=>x.period===basePeriod))throw Error(key+": 기준 지수 관측값 "+basePeriod+"이 없습니다. 임의의 첫 관측값으로 대체하지 않습니다.");
- if(v==="REER")notes.push(c+" REER: "+basePeriod+" 월 자료를 기준으로 하는 사전 공개 관측치 사용. 09시 정각 지수가 아닙니다.");
+ notes.push(c+" "+v+": 기준 관측 기간 "+basePeriod+" (2026-10-19 09시까지 발표 여부는 별도 검증 필요)");if(v==="REER")notes.push(c+" REER: "+basePeriod+" 월 자료를 기준으로 하는 사전 공개 관측치 사용. 09시 정각 지수가 아닙니다.");
  }
  for(const c of CURRENCIES)if(!baseline.has(c))notes.push(c+": 기준 환율 없음");
  return {baseline,groups,notes:[...new Set(notes)],synthetic};
