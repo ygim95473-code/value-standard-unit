@@ -18,14 +18,14 @@ currency,krw_per_unit,quote_time_utc,source,source_url,quote_type,verified
 ## 2. BIS index CSV
 Header (required, exact):
 ```csv
-currency,variant,period,index_value,source,series_id,verified
+currency,variant,period,index_value,source,series_id,verified,baseline_period
 ```
 - `variant` is `NEER` or `REER`. **Never combine variants.**
 - `period` is `YYYY-MM-DD` for daily observations or `YYYY-MM` for monthly observations.
-- At least two distinct periods per currency/variant for a trend; the **first row by period** is treated as the index baseline. **IMPORTANT:** this is an experimental simplification. For a legitimate run, the earliest period must be the explicitly documented baseline period (NEER daily 2026-10-19 if available; REER monthly 2026-10 or a clearly labeled latest previously published month). The dashboard flags incompatible or missing baseline periods. Never silently treat an arbitrary first observation as October 19.
+- At least two distinct periods per currency/variant for a trend; the **explicit `baseline_period` observation** is treated as the index baseline, whether it is the first or last period. The baseline observation must exist in the uploaded series, or the application rejects the file. For NEER, the prototype requires daily `2026-10-19` (if unavailable, no NEER calculation); for REER, the baseline must be an earlier month (`2026-09` or earlier), with documented evidence that the selected monthly release was available at the reference instant. The application checks period syntax and presence, but it cannot independently prove the release date.
 - `index_value` is a positive finite number. `source` and `series_id` must identify the BIS source/series.
 - Data revisions, index direction, release date and source retrieval date should be recorded in a separate reproducibility log before publication.
-- **Monthly REER has no intraday 09:00 value.** An October 2026 REER observation is ex-post, not information available at 09:00 on October 19.
+- **Monthly REER has no intraday 09:00 value.** An October 2026 REER observation is ex-post, not information available at 09:00 on October 19. Historical observations before the baseline period are converted by the same ratio formula; a historical index value does not establish an independent absolute currency value.
 
 ## Caveats / 한계
 - FX is a time-specific market quote, while NEER may be daily and REER monthly.
