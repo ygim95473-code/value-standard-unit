@@ -1,5 +1,9 @@
 name: Collect BIS V observations
 on:
+  push:
+    paths:
+      - "scripts/collect_bis_v.py"
+      - ".github/workflows/collect-bis-v.yml"
   workflow_dispatch:
   schedule:
     - cron: '40 16 * * 4'
