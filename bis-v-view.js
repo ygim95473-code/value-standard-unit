@@ -13,11 +13,11 @@
   const initial=dates.at(-1);if(!initial)throw Error("기준 환율을 확인할 수 없습니다.");
   const krw=initial.rates_per_eur.KRW;
   const base={KRW:1,USD:krw/initial.rates_per_eur.USD,EUR:krw,JPY:krw/initial.rates_per_eur.JPY,CNY:krw/initial.rates_per_eur.CNY};
-  let chart=null;
+  let charts=[];
   function draw(){
    const type=variant.value,selected=bis.series.filter(s=>s.variant===type);
    table.replaceChildren();
-   const datasets=[],allDates=new Set(),colors=["#1a6db0","#dc7956","#15978b","#9069b7","#b08c28"];
+   const datasets=[],colors=["#1a6db0","#dc7956","#15978b","#9069b7","#b08c28"];
    for(const [i,c] of ["KRW","USD","EUR","JPY","CNY"].entries()){
     const s=selected.find(x=>x.currency===c);
     if(!s||!s.observations.length||!base[c])continue;
@@ -26,14 +26,27 @@
     for(const value of [c,s.series_id,s.baseline_period,latest.period,fmt(v)+" V",(100*(latest.index/s.baseline_index-1)).toFixed(3)+"%"]){
      const td=document.createElement("td");td.textContent=value;tr.appendChild(td);
     }table.appendChild(tr);
-    const arr=s.observations.map(x=>({period:x.period,value:100*(x.index/s.baseline_index-1)}));
-    arr.forEach(x=>allDates.add(x.period));
-    datasets.push({label:c+" (기준 대비 %)",points:arr,color:colors[i]});
+    const arr=s.observations.map(x=>({period:x.period,value:base[c]*x.index/s.baseline_index}));
+    datasets.push({currency:c,base:base[c],points:arr,color:colors[i]});
    }
-   if(chart){chart.destroy();chart=null}
-   if(typeof Chart!=="undefined"&&datasets.length){
-    const labels=[...allDates].sort();
-    chart=new Chart(canvas,{type:"line",data:{labels,datasets:datasets.map(d=>({label:d.label,data:labels.map(p=>d.points.find(x=>x.period===p)?.value??null),borderColor:d.color,backgroundColor:d.color,pointRadius:0,spanGaps:false,tension:.1}))},options:{responsive:true,plugins:{title:{display:true,text:"BIS 지수 기반 통화별 변화율 (%) · 최초 지수 기간 대비"}},scales:{y:{title:{display:true,text:"변화율 (%)"}}}}});
+   charts.forEach(ch=>ch.destroy());charts=[];
+   const holder=document.getElementById("bis-individual-charts");
+   if(!holder)return;
+   holder.replaceChildren();
+   if(typeof Chart==="undefined"){status.textContent="Chart.js 로딩 실패";return}
+   for(const d of datasets){
+    const panel=document.createElement("div");panel.className="chartbox";
+    const title=document.createElement("h3");title.textContent=d.currency+" · 최초 "+fmt(d.base)+"V / 1"+d.currency;
+    const subtitle=document.createElement("p");subtitle.className="hint";subtitle.textContent="세로축: 1"+d.currency+"당 V · 기준선: 최초 환산값 · BIS "+type+" 지수 기반";
+    const el=document.createElement("canvas");el.setAttribute("aria-label",d.currency+"의 V 관측 변화");
+    panel.append(title,subtitle,el);holder.append(panel);
+    const values=d.points.map(p=>p.value),min=Math.min(d.base,...values),max=Math.max(d.base,...values);
+    const pad=Math.max((max-min)*0.12,Math.abs(d.base)*0.0002);
+    const ch=new Chart(el,{type:"line",data:{labels:d.points.map(p=>p.period),datasets:[
+      {label:"관측 V / 1"+d.currency,data:values,borderColor:d.color,backgroundColor:d.color,pointRadius:0,tension:.1},
+      {label:"최초 기준선 "+fmt(d.base)+"V",data:d.points.map(()=>d.base),borderColor:"#777",borderDash:[5,5],pointRadius:0,borderWidth:1}
+    ]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true}},scales:{y:{min:min-pad,max:max+pad,title:{display:true,text:"V / 1"+d.currency}}}}});
+    charts.push(ch);
    }
   }
   variant.addEventListener("change",draw);draw();
