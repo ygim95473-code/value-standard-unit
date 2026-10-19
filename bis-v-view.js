@@ -6,7 +6,7 @@
  const fmt=x=>Number(x).toLocaleString("ko-KR",{maximumFractionDigits:8});
  try{
   const [r,f]=await Promise.all([fetch("./data/public/bis-v-observations.json",{cache:"no-store"}),fetch("./data/public/ecb-fx-latest.json",{cache:"no-store"})]);
-  if(!r.ok)throw Error("BIS 관측 자료가 아직 게시되지 않았습니다. GitHub Actions의 Collect BIS V observations를 먼저 실행해야 합니다.");
+  if(!r.ok)throw Error("BIS 관측 자료를 읽지 못했습니다. HTTP "+r.status);
   if(!f.ok)throw Error("최초 환율 환산 자료가 없습니다.");
   const bis=await r.json(),fx=await f.json();
   const dates=fx.rows.filter(x=>x.date<="2026-10-19").sort((a,b)=>a.date.localeCompare(b.date));
@@ -28,12 +28,12 @@
     }table.appendChild(tr);
     const arr=s.observations.map(x=>({period:x.period,value:base[c]*x.index/s.baseline_index}));
     arr.forEach(x=>allDates.add(x.period));
-    datasets.push({label:c+" (V/1통화)",points:arr,color:colors[i]});
+    datasets.push({label:c+" (기준 대비 %)",points:arr,color:colors[i]});
    }
    if(chart){chart.destroy();chart=null}
    if(typeof Chart!=="undefined"&&datasets.length){
     const labels=[...allDates].sort();
-    chart=new Chart(canvas,{type:"line",data:{labels,datasets:datasets.map(d=>({label:d.label,data:labels.map(p=>d.points.find(x=>x.period===p)?.value??null),borderColor:d.color,backgroundColor:d.color,pointRadius:0,spanGaps:false,tension:.1}))},options:{responsive:true,plugins:{title:{display:true,text:"BIS 지수 기반 통화별 V값 (1통화당 V; 통화 단위 크기 차이에 주의)"}}}});
+    chart=new Chart(canvas,{type:"line",data:{labels,datasets:datasets.map(d=>({label:d.label,data:labels.map(p=>d.points.find(x=>x.period===p)?.value??null),borderColor:d.color,backgroundColor:d.color,pointRadius:0,spanGaps:false,tension:.1}))},options:{responsive:true,plugins:{title:{display:true,text:"BIS 지수 기반 V 가치 변화율 (%) — 기준 시점 0%"}}}});
    }
   }
   variant.addEventListener("change",draw);draw();
