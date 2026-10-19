@@ -16,7 +16,7 @@ function fields(rows,required){for(const key of required)if(!rows[0]||!(key in r
 function positive(s,label){const n=Number(s);if(!s||!Number.isFinite(n)||n<=0)throw Error(label+"은 양수여야 합니다.");return n}
 function parse(fx,indices,synthetic=false){
  fields(fx,["currency","krw_per_unit","quote_time_utc","source","source_url","quote_type","verified"]);
- fields(indices,["currency","variant","period","index_value","source","series_id","verified"]);
+ fields(indices,["currency","variant","period","index_value","source","series_id","verified","baseline_period"]);
  const errors=[],notes=[],baseline=new Map(),groups=new Map();
  for(const r of fx){const c=r.currency.toUpperCase();if(!CURRENCIES.includes(c))continue;if(baseline.has(c))throw Error("중복 기준 환율: "+c);
  const value=positive(r.krw_per_unit,c+" 기준 환율");const timestamp=Date.parse(r.quote_time_utc);
@@ -29,16 +29,17 @@ function parse(fx,indices,synthetic=false){
  }
  for(const r of indices){const c=r.currency.toUpperCase(),v=r.variant.toUpperCase();if(!CURRENCIES.includes(c)||!["NEER","REER"].includes(v))continue;
  if(!/^\d{4}-\d\d(-\d\d)?$/.test(r.period))throw Error("잘못된 지수 관측 기간: "+r.period);
- const value=positive(r.index_value,c+" "+v+" 지수");const key=c+"|"+v;if(!groups.has(key))groups.set(key,[]);
+ const value=positive(r.index_value,c+" "+v+" 지수");if(!r.baseline_period||!/^\d{4}-\d\d(-\d\d)?$/.test(r.baseline_period))throw Error(c+" "+v+": 명시적 기준 관측 기간(baseline_period)이 필요합니다.");if(v==="NEER"&&r.baseline_period!=="2026-10-19")throw Error(c+" NEER: 기준 관측일은 2026-10-19여야 합니다.");if(v==="REER"&&r.baseline_period>="2026-10")throw Error(c+" REER: 2026-10-19 시각에 발표되지 않은 2026-10 이후 월 자료를 기준으로 쓸 수 없습니다.");const key=c+"|"+v;if(!groups.has(key))groups.set(key,[]);
  groups.get(key).push({...r,currency:c,variant:v,value});
  if(r.verified!=="true")notes.push(c+" "+v+" "+r.period+": 지수 검증 표시 미완료");
  if(!r.source||!r.series_id)notes.push(c+" "+v+": BIS 계열 식별자/출처 누락");
  }
  for(const [key,arr] of groups){arr.sort((a,b)=>a.period.localeCompare(b.period));if(new Set(arr.map(x=>x.period)).size!==arr.length)throw Error("중복 지수 관측 기간: "+key);
- const [c,v]=key.split("|"),first=arr[0];
- if(v==="NEER"&&first.period!=="2026-10-19")notes.push(c+" NEER: 첫 관측일 "+first.period+" — 기준일 2026-10-19와 불일치");
- if(v==="REER"&&first.period!=="2026-10")notes.push(c+" REER: 첫 관측월 "+first.period+" — 2026-10 월별 사후 기준과 다름");
- if(v==="REER")notes.push(c+" REER: 월별 지수는 09시 정각 값이 아님(사후 기간 대응)");
+ const [c,v]=key.split("|"),bases=new Set(arr.map(x=>x.baseline_period));
+ if(bases.size!==1)throw Error(key+": 기준 관측 기간이 서로 다릅니다.");
+ const basePeriod=arr[0].baseline_period;
+ if(!arr.some(x=>x.period===basePeriod))throw Error(key+": 기준 지수 관측값 "+basePeriod+"이 없습니다. 임의의 첫 관측값으로 대체하지 않습니다.");
+ if(v==="REER")notes.push(c+" REER: "+basePeriod+" 월 자료를 기준으로 하는 사전 공개 관측치 사용. 09시 정각 지수가 아닙니다.");
  }
  for(const c of CURRENCIES)if(!baseline.has(c))notes.push(c+": 기준 환율 없음");
  return {baseline,groups,notes:[...new Set(notes)],synthetic};
@@ -46,10 +47,10 @@ function parse(fx,indices,synthetic=false){
 function num(n){return Number(n).toLocaleString("ko-KR",{maximumFractionDigits:5})}
 function compute(){if(!state)return;const v=$("variant").value,tbody=$("results");tbody.replaceChildren();const all=[],lines=[];
  for(const c of CURRENCIES){const fx=state.baseline.get(c),series=state.groups.get(c+"|"+v),tr=document.createElement("tr");
- const latest=series?.at(-1),initial=series?.[0],value=fx&&latest?fx.value*latest.value/initial.value:null,delta=latest?100*(latest.value/initial.value-1):null;
+ const latest=series?.at(-1),initial=series?.find(x=>x.period===series[0].baseline_period),value=fx&&latest&&initial?fx.value*latest.value/initial.value:null,delta=latest&&initial?100*(latest.value/initial.value-1):null;
  for(const cell of [c,fx?num(fx.value):"미확정",latest?.period||"자료 없음",value===null?"계산 불가":num(value),delta===null?"—":(delta>=0?"+":"")+num(delta)+"%"]){const td=document.createElement("td");td.textContent=cell;tr.appendChild(td)}tbody.appendChild(tr);
  if(value!==null)all.push({currency:c,variant:v,period:latest.period,baseline_v:fx.value,index_base:initial.value,index_latest:latest.value,current_v:value,change_pct:delta});
- if(fx&&series?.length)lines.push({c,arr:series.map(r=>({x:r.period,y:100*(r.value/initial.value-1)}))});
+ if(fx&&initial&&series?.length)lines.push({c,arr:series.map(r=>({x:r.period,y:100*(r.value/initial.value-1)}))});
  }
  state.output=all;
  $("export").disabled=!all.length||state.synthetic;
@@ -69,8 +70,8 @@ function renderChart(lines){if(chart){chart.destroy();chart=null}const canvas=$(
 function sample(){
  const t="2026-10-19T00:00:00Z",curr=["KRW","USD","EUR","JPY","CNY"],fx=[1,1300,1450,9,185];
  const baseline=curr.map((c,i)=>({currency:c,krw_per_unit:String(fx[i]),quote_time_utc:t,source:"SYNTHETIC EXAMPLE — NOT MARKET DATA",source_url:"https://example.invalid",quote_type:"synthetic",verified:"false"}));
- const indices=[];for(const v of ["NEER","REER"])for(let i=0;i<curr.length;i++){const periods=v==="NEER"?["2026-10-19","2026-10-20","2026-10-21"]:["2026-10","2026-11","2026-12"];
- for(let j=0;j<3;j++)indices.push({currency:curr[i],variant:v,period:periods[j],index_value:String(100+(i-2)*j*1.4),source:"SYNTHETIC — NOT BIS",series_id:"SYNTHETIC",verified:"false"})}
+ const indices=[];for(const v of ["NEER","REER"])for(let i=0;i<curr.length;i++){const periods=v==="NEER"?["2026-10-19","2026-10-20","2026-10-21"]:["2026-09","2026-10","2026-11"];
+ for(let j=0;j<3;j++)indices.push({currency:curr[i],variant:v,period:periods[j],index_value:String(100+(i-2)*j*1.4),source:"SYNTHETIC — NOT BIS",series_id:"SYNTHETIC",verified:"false",baseline_period:v==="NEER"?"2026-10-19":"2026-09"})}
  state=parse(baseline,indices,true);compute();$("message").textContent="합성 예시 모드입니다. 실제 환율·BIS 관측값이 아닙니다.";
 }
 $("load").addEventListener("click",async()=>{try{const a=$("baseline").files[0],b=$("indices").files[0];if(!a||!b)throw Error("두 CSV 파일을 모두 선택해 주세요.");state=parse(csv(await a.text()),csv(await b.text()));compute();$("message").textContent="계산 완료. 검증 경고와 관측 시점을 반드시 확인하세요."}catch(e){$("message").textContent="오류: "+e.message}});
