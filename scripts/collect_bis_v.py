@@ -21,7 +21,7 @@ def get_series(key, start):
     for r in records:
         try:
             t=r["TIME_PERIOD"].strip();v=float(r["OBS_VALUE"])
-            if v>0 and t and t<="2026-10-19":values[t]=v
+            if v>0 and t and t<=("2026-10-12" if key.startswith("D.") else "2026-09"):values[t]=v
         except (ValueError,TypeError,KeyError):continue
     if not values:raise ValueError("No BIS observations: "+key)
     return [{"period":k,"index":v} for k,v in sorted(values.items())]
@@ -32,7 +32,7 @@ def main():
             key=f"{frequency}.{typ}.B.{area}"
             try:
                 obs=get_series(key,start)
-                # Daily reference period is the last available observation on/before fixed t0.
+                # Conservative observation cutoff; publication-vintage still requires verification.
                 # REER latest period may be published later: do not imply vintage verification.
                 base=obs[-1]
                 series.append({"currency":c,"variant":variant,"series_id":key,"source":"BIS WS_EER 1.0",
