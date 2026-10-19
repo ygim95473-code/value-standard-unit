@@ -1,0 +1,32 @@
+{
+  "provider": "European Central Bank",
+  "dataset": "EXR",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+KRW+JPY+CNY.EUR.SP00.A?format=csvdata",
+  "observation_date": "2006-01-09",
+  "quote_convention": "currency units per 1 EUR",
+  "retrieved_at_utc": "2026-10-19T05:04:05.141608+00:00",
+  "content_sha256": "d2ef3d08b6e8a29adabcc4a682c709ff251330b1fd9942e9ca32a28dbc550911",
+  "observations": [
+    {
+      "date": "2006-01-09",
+      "currency": "CNY",
+      "units_per_eur": 9.7427
+    },
+    {
+      "date": "2006-01-09",
+      "currency": "JPY",
+      "units_per_eur": 137.85
+    },
+    {
+      "date": "2006-01-09",
+      "currency": "KRW",
+      "units_per_eur": 1180.56
+    },
+    {
+      "date": "2006-01-09",
+      "currency": "USD",
+      "units_per_eur": 1.2078
+    }
+  ],
+  "note": "ECB reference rates are not intraday spot quotes or V values; publication and market calendars differ."
+}

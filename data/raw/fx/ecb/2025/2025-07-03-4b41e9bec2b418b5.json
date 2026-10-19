@@ -1,0 +1,32 @@
+{
+  "provider": "European Central Bank",
+  "dataset": "EXR",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+KRW+JPY+CNY.EUR.SP00.A?format=csvdata",
+  "observation_date": "2025-07-03",
+  "quote_convention": "currency units per 1 EUR",
+  "retrieved_at_utc": "2026-10-19T05:04:06.032589+00:00",
+  "content_sha256": "4b41e9bec2b418b52a9d828c11aae431ada601f5b8ff28de5c738d0d7340ce64",
+  "observations": [
+    {
+      "date": "2025-07-03",
+      "currency": "CNY",
+      "units_per_eur": 8.4377
+    },
+    {
+      "date": "2025-07-03",
+      "currency": "JPY",
+      "units_per_eur": 169.58
+    },
+    {
+      "date": "2025-07-03",
+      "currency": "KRW",
+      "units_per_eur": 1604.8
+    },
+    {
+      "date": "2025-07-03",
+      "currency": "USD",
+      "units_per_eur": 1.1782
+    }
+  ],
+  "note": "ECB reference rates are not intraday spot quotes or V values; publication and market calendars differ."
+}

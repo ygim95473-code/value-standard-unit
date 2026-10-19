@@ -1,0 +1,32 @@
+{
+  "provider": "European Central Bank",
+  "dataset": "EXR",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+KRW+JPY+CNY.EUR.SP00.A?format=csvdata",
+  "observation_date": "2014-03-13",
+  "quote_convention": "currency units per 1 EUR",
+  "retrieved_at_utc": "2026-10-19T05:04:05.517442+00:00",
+  "content_sha256": "2ba43655d73fd72a23a84d3ce8217244ee64ce140df6c25856bd492b19c161c9",
+  "observations": [
+    {
+      "date": "2014-03-13",
+      "currency": "CNY",
+      "units_per_eur": 8.5566
+    },
+    {
+      "date": "2014-03-13",
+      "currency": "JPY",
+      "units_per_eur": 143.3
+    },
+    {
+      "date": "2014-03-13",
+      "currency": "KRW",
+      "units_per_eur": 1488.44
+    },
+    {
+      "date": "2014-03-13",
+      "currency": "USD",
+      "units_per_eur": 1.3942
+    }
+  ],
+  "note": "ECB reference rates are not intraday spot quotes or V values; publication and market calendars differ."
+}

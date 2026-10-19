@@ -1,0 +1,32 @@
+{
+  "provider": "European Central Bank",
+  "dataset": "EXR",
+  "source_url": "https://data-api.ecb.europa.eu/service/data/EXR/D.USD+KRW+JPY+CNY.EUR.SP00.A?format=csvdata",
+  "observation_date": "2000-02-07",
+  "quote_convention": "currency units per 1 EUR",
+  "retrieved_at_utc": "2026-10-19T05:04:04.863508+00:00",
+  "content_sha256": "41484c0ea6a6534aa210e1c2b7a2c3396f396807a86712d094cc75479b6a0681",
+  "observations": [
+    {
+      "date": "2000-02-07",
+      "currency": "CNY",
+      "units_per_eur": 8.0841
+    },
+    {
+      "date": "2000-02-07",
+      "currency": "JPY",
+      "units_per_eur": 106.02
+    },
+    {
+      "date": "2000-02-07",
+      "currency": "KRW",
+      "units_per_eur": 1104.08
+    },
+    {
+      "date": "2000-02-07",
+      "currency": "USD",
+      "units_per_eur": 0.9767
+    }
+  ],
+  "note": "ECB reference rates are not intraday spot quotes or V values; publication and market calendars differ."
+}
