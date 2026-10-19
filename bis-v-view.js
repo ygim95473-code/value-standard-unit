@@ -1,8 +1,8 @@
 "use strict";
 // BIS index observations; values are experimental and never redefine 1V.
 (async()=>{
- const status=document.getElementById("bis-auto-status"),table=document.getElementById("bis-auto-table"),canvas=document.getElementById("bis-auto-chart"),variant=document.getElementById("bis-auto-variant");
- if(!status||!table||!canvas||!variant)return;
+ const status=document.getElementById("bis-auto-status"),table=document.getElementById("bis-auto-table"),holder=document.getElementById("bis-individual-charts"),variant=document.getElementById("bis-auto-variant");
+ if(!status||!table||!holder||!variant){const e=document.getElementById("bis-auto-status");if(e)e.textContent="그래프 영역 연결 오류";return;}
  const fmt=x=>Number(x).toLocaleString("ko-KR",{maximumFractionDigits:8});
  try{
   const [r,f]=await Promise.all([fetch("./data/public/bis-v-observations.json",{cache:"no-store"}),fetch("./data/public/ecb-fx-latest.json",{cache:"no-store"})]);
@@ -30,10 +30,8 @@
     datasets.push({currency:c,base:base[c],points:arr,color:colors[i]});
    }
    charts.forEach(ch=>ch.destroy());charts=[];
-   const holder=document.getElementById("bis-individual-charts");
-   if(!holder)return;
    holder.replaceChildren();
-   if(typeof Chart==="undefined"){status.textContent="Chart.js 로딩 실패";return}
+   if(typeof Chart==="undefined"){status.textContent="Chart.js 로딩 실패 — 차트 라이브러리를 불러올 수 없습니다.";return}
    for(const d of datasets){
     const panel=document.createElement("div");panel.className="chartbox";
     const title=document.createElement("h3");title.textContent=d.currency+" · 최초 "+fmt(d.base)+"V / 1"+d.currency;
