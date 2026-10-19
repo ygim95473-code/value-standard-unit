@@ -6,6 +6,7 @@
 <link rel="stylesheet" href="./styles.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" defer></script>
 <script src="./app.js" defer></script>
+<script src="./fx-view.js" defer></script>
 </head>
 <body>
 <header><div class="wrap top"><div><span class="eyebrow">OPEN CURRENCY MEASUREMENT EXPERIMENT</span><h1>Value Standard Unit <em>V</em></h1><p>가치기준단위 · 검증 가능한 통화 가치 비교 실험</p></div><a href="https://github.com/ygim95473-code/value-standard-unit" target="_blank" rel="noopener">GitHub 제안서 ↗</a></div></header>
@@ -21,7 +22,8 @@
 <div class="table-scroll"><table><thead><tr><th>통화</th><th>최초 V / 1통화</th><th>최근 관측 기간</th><th>계산 V / 1통화</th><th>기준 대비 변화</th></tr></thead><tbody id="results"><tr><td>KRW</td><td>1</td><td colspan="3">기준 환율 및 지수 자료를 불러오세요.</td></tr></tbody></table></div>
 <div class="chartbox"><canvas id="chart" role="img" aria-label="통화별 기준 대비 지수 변화 그래프"></canvas><p id="chartFallback">데이터를 불러오면 기간별 변화를 표시합니다.</p></div>
 </section>
-<section class="panel"><h2>03 · 검증 및 재현성</h2><p>자료의 출처·기준시각·지수 계열과 관측 기간을 확인합니다. 검증 표시(verified)는 제출자의 주장일 뿐 외부 기관의 인증을 의미하지 않습니다.</p><ul id="audit"><li>아직 입력된 자료가 없습니다.</li></ul><button id="export" class="secondary" disabled>계산 결과 CSV 내려받기</button></section>
-<footer>Value Standard Unit (V) · v0.1 prototype · <a href="https://github.com/ygim95473-code/value-standard-unit/discussions">공개 토론 및 반론 ↗</a> · 연구 실험용, 투자 조언 아님</footer>
+<section class="panel" id="fx-observations"><h2>03 · 실제 ECB 환율 관찰 기록</h2><p>공개 보관소의 최근 최대 180개 관측일을 자동 표시합니다. <strong>V값이나 BIS 실효환율이 아니며</strong> ECB의 EUR 기준 환율을 비교합니다. 유로(EUR)는 기준통화이므로 1로 표시됩니다. 그래프는 첫 관측일 대비 각 통화의 유로 대비 환율 변화율이며, 통화의 절대 가치 변화가 아닙니다.</p><p id="fx-feed-status" role="status">실제 자료를 불러오는 중...</p><div class="table-scroll"><table><thead><tr><th>통화</th><th>최근 환율 (1 EUR당 통화량)</th><th>관측일</th><th>첫 표시일 대비 변화</th></tr></thead><tbody id="fx-feed-table"><tr><td colspan="4">자료 확인 중</td></tr></tbody></table></div><div class="chartbox"><canvas id="fx-feed-chart" aria-label="ECB 기준 유로 대비 환율 변동 그래프"></canvas><p id="fx-feed-fallback">자료 연결을 확인하고 있습니다.</p></div><p class="hint">출처: <a href="https://data-api.ecb.europa.eu/service/data/EXR/D.USD+KRW+JPY+CNY.EUR.SP00.A?format=csvdata" target="_blank" rel="noopener">ECB EXR 공식 자료</a> · <a href="./data/public/ecb-fx-latest.json" target="_blank" rel="noopener">공개 데이터 파일</a>. 이 데이터는 2026-10-19 09:00 KST의 확정 기준 환율을 대신하지 않습니다.</p></section>
+<section class="panel"><h2>04 · 검증 및 재현성</h2><p>자료의 출처·기준시각·지수 계열과 관측 기간을 확인합니다. 검증 표시(verified)는 제출자의 주장일 뿐 외부 기관의 인증을 의미하지 않습니다.</p><ul id="audit"><li>아직 입력된 자료가 없습니다.</li></ul><button id="export" class="secondary" disabled>계산 결과 CSV 내려받기</button></section>
+<footer>Value Standard Unit (V) · v0.2 experimental dashboard · <a href="https://github.com/ygim95473-code/value-standard-unit/discussions">공개 토론 및 반론 ↗</a> · 연구 실험용, 투자 조언 아님</footer>
 </main>
 </body></html>
