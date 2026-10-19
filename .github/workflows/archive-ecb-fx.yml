@@ -21,11 +21,13 @@ jobs:
           python-version: '3.12'
       - name: Download and archive ECB observations
         run: python scripts/collect_ecb_fx.py
-      - name: Commit only new snapshots
+      - name: Build public dashboard feed
+        run: python scripts/build_fx_dashboard.py
+      - name: Commit new snapshots and dashboard feed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/raw/fx/ecb/
+          git add data/raw/fx/ecb/ data/public/ecb-fx-latest.json
           if git diff --cached --quiet; then
             echo "No new ECB observations"
           else
