@@ -10,10 +10,11 @@
   if(!br.ok||!fr.ok)throw Error("BIS 또는 ECB 자료를 읽지 못했습니다.");
   const bis=await br.json(),fx=await fr.json();
   const series=Object.fromEntries(bis.series.filter(s=>s.variant==="NEER").map(s=>[s.currency,s]));
-  const fxRows=fx.rows.filter(r=>r.date<="2026-10-19"&&codes.every(c=>Number(r.rates_per_eur[c])>0)).sort((a,b)=>a.date.localeCompare(b.date));
+  const rate=(r,c)=>c==="EUR"?1:Number(r.rates_per_eur[c]);
+  const fxRows=fx.rows.filter(r=>r.date<="2026-10-19"&&codes.every(c=>rate(r,c)>0)).sort((a,b)=>a.date.localeCompare(b.date));
   const origin=fxRows.at(-1);
   if(!origin||codes.some(c=>!series[c]))throw Error("기준 관측 자료가 부족합니다.");
-  const b=origin.rates_per_eur,base=Object.fromEntries(codes.map(c=>[c,b.KRW/b[c]]));
+  const b=origin.rates_per_eur,base=Object.fromEntries(codes.map(c=>[c,b.KRW/rate(origin,c)]));
   const usdAtOrigin=b.USD;
   const usdNEER=series.USD;
   const bisMaps=Object.fromEntries(codes.map(c=>[c,new Map(series[c].observations.map(o=>[o.period,o.index]))]));
@@ -26,8 +27,8 @@
    const bisV=rows.map(r=>base[c]*bisMaps[c].get(r.date)/series[c].baseline_index);
    const usdV=rows.map(r=>{
     const usdAnchor=base.USD*bisMaps.USD.get(r.date)/usdNEER.baseline_index;
-    const usdPerCurrency=r.rates_per_eur.USD/r.rates_per_eur[c];
-    const originUsdPerCurrency=usdAtOrigin/b[c];
+    const usdPerCurrency=rate(r,"USD")/rate(r,c);
+    const originUsdPerCurrency=usdAtOrigin/rate(origin,c);
     return base[c]*(usdAnchor/base.USD)*(usdPerCurrency/originUsdPerCurrency);
    });
    const latest=rows.at(-1),v1=bisV.at(-1),v2=usdV.at(-1);
