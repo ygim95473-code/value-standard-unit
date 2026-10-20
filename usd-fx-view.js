@@ -2,8 +2,8 @@
 // Comparison experiment: BIS-V vs USD-anchored FX-V. USD anchor uses BIS USD NEER;
 // hence the two curves are NOT independent measures of absolute currency value.
 (async()=>{
- const status=document.getElementById("usd-fx-status"),holder=document.getElementById("usd-fx-charts"),table=document.getElementById("usd-v-table");
- if(!status||!holder||!table)return;
+ const status=document.getElementById("usd-fx-status"),holder=document.getElementById("usd-fx-charts"),table=document.getElementById("usd-v-table"),initialTable=document.getElementById("usd-v-initial-table");
+ if(!status||!holder||!table||!initialTable)return;
  const codes=["KRW","USD","EUR","JPY","CNY"],fmt=v=>Number(v).toLocaleString("ko-KR",{maximumFractionDigits:6});
  try{
   const [br,fr]=await Promise.all([fetch("./data/public/bis-v-observations.json",{cache:"no-store"}),fetch("./data/public/ecb-fx-latest.json",{cache:"no-store"})]);
@@ -21,8 +21,11 @@
   const rows=fxRows.filter(r=>codes.every(c=>bisMaps[c].has(r.date)));
   if(!rows.length)throw Error("같은 날짜의 BIS·ECB 관측값이 없습니다.");
   if(typeof Chart==="undefined")throw Error("그래프 라이브러리를 불러오지 못했습니다.");
-  table.replaceChildren();holder.replaceChildren();
+  table.replaceChildren();initialTable.replaceChildren();holder.replaceChildren();
   for(const c of codes){
+   const initialRow=document.createElement("tr");
+   for(const value of [c,"2026-10-19 09:00 KST",fmt(base[c])+" V",fmt(base[c])+" V","0 V"]){const td=document.createElement("td");td.textContent=value;initialRow.append(td);}
+   initialTable.append(initialRow);
    const dates=rows.map(r=>r.date);
    const bisV=rows.map(r=>base[c]*bisMaps[c].get(r.date)/series[c].baseline_index);
    const usdV=rows.map(r=>{
@@ -45,6 +48,6 @@
     {label:"최초 대응값 (잠정)",data:dates.map(()=>base[c]),borderColor:"#777",borderDash:[2,5],borderWidth:1,pointRadius:0}
    ]},options:{responsive:true,maintainAspectRatio:true,interaction:{mode:"index",intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+": "+fmt(ctx.parsed.y)+" V"}}},scales:{y:{title:{display:true,text:"V / 1"+c}},x:{ticks:{maxTicksLimit:8}}}}});
   }
-  status.textContent="비교 기간: "+rows[0].date+" ~ "+rows.at(-1).date+" · BIS NEER와 ECB 환율의 날짜가 일치하는 "+rows.length+"개 관측일 · 최초 환산값은 정각 호가 미검증 잠정값";
+  status.textContent="최초 정의: 2026-10-19 09:00 KST (두 방식의 잠정 최초 대응값 동일) · 과거 공통 관측 기간: "+rows[0].date+" ~ "+rows.at(-1).date+" ("+rows.length+"일) · 최초 시각 정각 환율 및 BIS 지수 미확인";
  }catch(e){status.textContent="V 비교를 표시할 수 없습니다: "+e.message;}
 })();
